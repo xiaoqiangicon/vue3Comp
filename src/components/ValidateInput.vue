@@ -1,6 +1,13 @@
 <template>
   <div class="validate-input-container pb-3">
-    <input type="text" :value="inputRef.val" @input="updateValue" @blur="validateInput" class="form-control" :class="{'isInvalid': inputRef.error}">
+    <input 
+      :value="inputRef.val" 
+      @input="updateValue" 
+      @blur="validateInput" 
+      class="form-control" 
+      :class="{'isInvalid': inputRef.error}"
+      v-bind="$attrs"
+    >
     <span v-if="inputRef.error" class="invalid-feedback">
       {{inputRef.message}}
     </span>
@@ -8,7 +15,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, PropType } from 'vue'
+import { defineComponent, reactive, PropType, onMounted } from 'vue'
+import { emitter } from './ValidateForm.vue';
 
 const emailReg = /^[a-zA-Z0-9]/;
 interface RuleProp {
@@ -17,11 +25,12 @@ interface RuleProp {
 }
 export type RulesProp = RuleProp[]; 
 export default defineComponent({
+  name: 'ValidateInput',
   props: {
     rules: Array as PropType<RulesProp>,
     modelValue: String
   },
-  name: 'ValidateInput',
+  inheritAttrs: false,
   setup(props, context) {
     const inputRef = reactive({
       val: props.modelValue || '',
@@ -50,9 +59,14 @@ export default defineComponent({
           return passed;
         })
         inputRef.error = !allPassed
+        return allPassed;
       }
+      return true;
     }
-    console.log(inputRef)
+    
+    onMounted(() => {
+      emitter.emit('formItemCreated', validateInput as any);
+    })
     return { inputRef, validateInput, updateValue }
   }
 })
