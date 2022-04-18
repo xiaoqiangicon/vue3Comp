@@ -25,7 +25,8 @@
 
 <script lang="ts">
 // defineComponet是一个函数，没什么作用，专门为了支持ts出现的。
-import { defineComponent, reactive, ref } from 'vue';
+import { defineComponent, onMounted, reactive, ref } from 'vue';
+import { useStore } from 'vuex';
 
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue';
 import ValidateInputVue, { RulesProp } from '@/components/ValidateInput.vue';
@@ -44,6 +45,10 @@ export default defineComponent({
     ValidateFormVue,
   },
   setup(props, context) {
+    const store = useStore();
+    onMounted(() => {
+      store.dispatch('fetchColumns')
+    })
     const inputRef = ref<any>();
     const emailRules: RulesProp = [
       { type: 'required', message: '不能为空' },
@@ -55,7 +60,7 @@ export default defineComponent({
     const onFormSubmit = (result: boolean) => {
       console.log('1234',inputRef.value.validateInput(), result)
     }
-    return { currentUser, emailRules, emailVal, onFormSubmit, inputRef }
+    return { currentUser, emailRules, emailVal, onFormSubmit, inputRef, passVal }
   }
 });
 </script>
