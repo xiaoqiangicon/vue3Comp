@@ -1,6 +1,22 @@
 <template>
   <div class="container">
     <GlobalHeader :user="currentUser" />
+    <UploadVue 
+      action="/upload" 
+      :beforeUpload="beforeUpload"
+      @file-uploaded="onFileUploaded"
+      @file-uploaded-error="onFileUploadedError"
+     >
+      <template #loading>
+        <div class="spinner-border" role="status">
+          <span class="sr-only">Loading</span>
+        </div>
+      </template>
+      <template #uploaded="dataProps">
+        <img :src="dataProps.uploadedData.data.url" width="500" alt="">
+      </template>
+     </UploadVue>
+    <LoaderVue v-if="!1" text="拼命加载中" background="rgba(0, 0, 0, .8)" />
     <div class="mb-3">
       <ValidateFormVue @form-submit="onFormSubmit">
         <ValidateInputVue 
@@ -31,6 +47,10 @@ import { useStore } from 'vuex';
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue';
 import ValidateInputVue, { RulesProp } from '@/components/ValidateInput.vue';
 import ValidateFormVue from '@/components/ValidateForm.vue';
+import LoaderVue from '@/components/Loader.vue';
+import createMessage from '@/hooks/createMessage';
+import UploadVue from '@/components/Upload.vue'
+import { createMemoryHistory } from 'vue-router';
 
 const currentUser: UserProps = {
   isLogin: true,
@@ -43,6 +63,8 @@ export default defineComponent({
     GlobalHeader,
     ValidateInputVue,
     ValidateFormVue,
+    LoaderVue,
+    UploadVue,
   },
   setup(props, context) {
     const store = useStore();
@@ -58,9 +80,25 @@ export default defineComponent({
     let passVal = ref('')
 
     const onFormSubmit = (result: boolean) => {
-      console.log('1234',inputRef.value.validateInput(), result)
+      createMessage( 'hello', 'default',)
     }
-    return { currentUser, emailRules, emailVal, onFormSubmit, inputRef, passVal }
+
+    const beforeUpload = (file: File) => {
+      const isJPG = file.type === 'image/jpeg';
+
+      if (!isJPG) {
+        createMessage('类型错误', 'error');
+      }
+      return isJPG;
+    }
+    const onFileUploaded = () => {
+      createMessage('上传图片', 'success')
+    }
+    const onFileUploadedError = () => {
+      createMessage('出错了', 'error')
+    }
+
+    return { currentUser, emailRules, emailVal, onFormSubmit, inputRef, passVal, beforeUpload, onFileUploaded, onFileUploadedError }
   }
 });
 </script>
